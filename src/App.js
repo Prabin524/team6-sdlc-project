@@ -13,7 +13,6 @@ function App() {
     { id: 4, name: "Emily White", role: "QA Tester", dept: "QA" },
   ];
 
-  // Styles (inline and clean)
   const layout = {
     display: "flex",
     height: "100vh",
@@ -80,7 +79,6 @@ function App() {
 
   return (
     <div style={layout}>
-      {/* Sidebar */}
       <div style={sidebar}>
         <h2>Admin Panel</h2>
         <div style={sidebarItem}>Dashboard</div>
@@ -89,11 +87,9 @@ function App() {
         <div style={sidebarItem}>Settings</div>
       </div>
 
-      {/* Main Dashboard */}
       <div style={main}>
         <h1>Dashboard Overview</h1>
 
-        {/* Stats Cards */}
         <div style={cardContainer}>
           <div style={card}>
             <h3>Total Employees</h3>
@@ -109,7 +105,6 @@ function App() {
           </div>
         </div>
 
-        {/* Recent Employees Table */}
         <h2>Recent Employees</h2>
         <table style={table}>
           <thead style={tableHeader}>
