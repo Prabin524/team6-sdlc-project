@@ -10,7 +10,6 @@ import Logo from './Logo';
 import config from 'config';
 import { activeItem } from 'store/reducers/menu';
 
-// ==============================|| MAIN LOGO ||============================== //
 
 const LogoSection = ({ sx, to }) => {
   const { defaultId } = useSelector((state) => state.menu);
