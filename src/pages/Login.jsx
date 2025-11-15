@@ -64,6 +64,7 @@ const Login = () => {
           fullWidth
           label="Email"
           margin="normal"
+          required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -73,6 +74,7 @@ const Login = () => {
           label="Password"
           type={showPass ? "text" : "password"}
           margin="normal"
+          required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           InputProps={{

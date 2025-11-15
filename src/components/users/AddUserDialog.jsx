@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -19,9 +19,36 @@ const AddUserDialog = ({ open, onClose, onSuccess }) => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  // Reset all fields when dialog opens
+  useEffect(() => {
+    if (open) {
+      setFullname("");
+      setEmail("");
+      setRole("");
+      setPassword("");
+      setError("");
+    }
+  }, [open]);
+
+  // Email validation regex
+  const validateEmail = (email) => {
+    return /^\S+@\S+\.\S+$/.test(email);
+  };
+
   const handleAdd = () => {
+    // Validations
     if (!fullname || !email || !password || !role) {
       setError("All fields are required");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
       return;
     }
 
@@ -43,15 +70,27 @@ const AddUserDialog = ({ open, onClose, onSuccess }) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth>
+    <Dialog
+      open={open}
+      onClose={() => {
+        setError("");
+        onClose();
+      }}
+      fullWidth
+    >
       <DialogTitle>Add New User</DialogTitle>
       <DialogContent>
-        {error && <Alert severity="error">{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
 
         <TextField
           fullWidth
           label="Full Name"
           margin="dense"
+          required
           value={fullname}
           onChange={(e) => setFullname(e.target.value)}
         />
@@ -60,8 +99,15 @@ const AddUserDialog = ({ open, onClose, onSuccess }) => {
           fullWidth
           label="Email"
           margin="dense"
+          required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          error={email !== "" && !validateEmail(email)}
+          helperText={
+            email !== "" && !validateEmail(email)
+              ? "Invalid email format"
+              : ""
+          }
         />
 
         <TextField
@@ -69,12 +115,20 @@ const AddUserDialog = ({ open, onClose, onSuccess }) => {
           type="password"
           label="Password"
           margin="dense"
+          required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          error={password !== "" && password.length < 6}
+          helperText={
+            password !== "" && password.length < 6
+              ? "Password must be at least 6 characters"
+              : ""
+          }
         />
 
         <TextField
           fullWidth
+          required
           select
           label="Role"
           margin="dense"
@@ -88,8 +142,27 @@ const AddUserDialog = ({ open, onClose, onSuccess }) => {
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" onClick={handleAdd}>
+        <Button
+          onClick={() => {
+            setError("");
+            onClose();
+          }}
+        >
+          Cancel
+        </Button>
+
+        <Button
+          variant="contained"
+          onClick={handleAdd}
+          disabled={
+            !fullname ||
+            !email ||
+            !password ||
+            !role ||
+            !validateEmail(email) ||
+            password.length < 6
+          }
+        >
           Save
         </Button>
       </DialogActions>
