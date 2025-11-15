@@ -15,7 +15,7 @@ import { loginUser } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { redirectToRole } from "../utils/roleRedirect";
-
+import { saveLoginLog } from "../services/adminStatsService";
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -29,13 +29,15 @@ const Login = () => {
   const handleLogin = async () => {
     try {
       const response = await loginUser(email, password);
+    saveLoginLog(response.email); // ⬅ SAVE LOGIN EVENT
 
       login(response, remember);
       redirectToRole(navigate, response.role);
     } catch (err) {
       setError(err);
     }
-  };
+  }
+  ;
 
   return (
     <Box

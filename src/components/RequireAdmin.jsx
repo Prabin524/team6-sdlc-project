@@ -5,9 +5,9 @@ import AccessDenied from "./AccessDenied";
 const RequireAdmin = ({ children }) => {
   const { user } = useAuth();
 
-  if (!user || user.role !== "admin") {
-    return <AccessDenied />;
-  }
+  if (!user) return <AccessDenied />;  // user not loaded yet
+
+  if (user.role !== "admin") return <AccessDenied />;
 
   return children;
 };

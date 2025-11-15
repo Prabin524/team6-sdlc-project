@@ -51,7 +51,7 @@ const AdminLayout = ({ children }) => {
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
+<Box sx={{ width: "100%", mt: 2 }}>
       <CssBaseline />
 
       {/* Top Navbar */}
