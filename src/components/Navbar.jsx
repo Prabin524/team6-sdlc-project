@@ -12,9 +12,10 @@ const Navbar = () => {
       sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
     >
       <Toolbar>
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
-          Welcome, {user?.role.toUpperCase()}
-        </Typography>
+       <Typography variant="h6" sx={{ flexGrow: 1 }}>
+  Welcome, {user?.fullname} ({user?.role.toUpperCase()})
+</Typography>
+
 
         <Box>
           <IconButton color="inherit" onClick={logout}>

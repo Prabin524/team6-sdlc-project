@@ -21,6 +21,8 @@ import PeopleIcon from "@mui/icons-material/People";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
+import PersonIcon from "@mui/icons-material/Person";
+
 
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -43,6 +45,8 @@ const AdminLayout = ({ children }) => {
     { text: "Employees", icon: <PeopleIcon />, path: "/admin/employees" },
     { text: "Attendance", icon: <AccessTimeIcon />, path: "/admin/attendance" },
     { text: "Settings", icon: <SettingsIcon />, path: "/admin/settings" },
+    { text: "Profile", icon: <PersonIcon />, path: "/admin/profile" }
+
   ];
 
   const handleLogout = () => {
@@ -72,9 +76,10 @@ const AdminLayout = ({ children }) => {
             <MenuIcon />
           </IconButton>
 
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Admin Panel {user?.role ? `- ${user.role.toUpperCase()}` : ""}
-          </Typography>
+         <Typography variant="h6" sx={{ flexGrow: 1 }}>
+  Welcome, {user?.fullname || "User"} – {user?.role?.toUpperCase()}
+</Typography>
+
 
           <IconButton color="inherit" onClick={handleLogout}>
             <LogoutIcon />

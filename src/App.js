@@ -7,6 +7,8 @@ import ManageUsers from "./pages/admin/ManageUsers";
 import RequireAdmin from "./components/RequireAdmin";
 import RolesList from "./pages/admin/RolesList";
 import HRDashboard from "./pages/hr/HRDashboard";
+import AdminProfile from "./pages/admin/AdminProfile";
+
 const ForgotPassword = () => <h1>Forgot Password Page</h1>;
 const Employees = () => <h1>Employees (Coming Soon)</h1>;
 const Attendance = () => <h1>Attendance (Coming Soon)</h1>;
@@ -83,6 +85,17 @@ function App() {
     </AdminLayout>
   }
 />
+<Route
+  path="/admin/profile"
+  element={
+    <RequireAdmin>
+      <AdminLayout>
+        <AdminProfile />
+      </AdminLayout>
+    </RequireAdmin>
+  }
+/>
+  
 
       </Routes>
     </BrowserRouter>

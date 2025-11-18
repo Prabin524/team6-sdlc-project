@@ -11,6 +11,7 @@ export const loginUser = (email, password) => {
         resolve({
           email: user.email,
           role: user.role,
+          fullname: user.fullName,
           token: "local-token-123"
         });
       } else {
