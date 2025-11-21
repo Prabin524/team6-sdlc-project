@@ -48,7 +48,24 @@ export const updateUser = (email, updatedData) => {
 
 // Delete user
 export const deleteUser = (email) => {
-  let users = getUsers();
-  users = users.filter((u) => u.email !== email);
-  saveUsers(users);
+  const users = getUsers();
+
+  // Count how many admins currently exist
+  const adminCount = users.filter((u) => u.role === "admin").length;
+
+  const userToDelete = users.find((u) => u.email === email);
+
+  // Block deleting last admin
+  if (userToDelete.role === "admin" && adminCount === 1) {
+    return {
+      success: false,
+      message: "You cannot delete the last Admin!",
+    };
+  }
+
+  const updatedUsers = users.filter((u) => u.email !== email);
+  saveUsers(updatedUsers);
+
+  return { success: true };
 };
+

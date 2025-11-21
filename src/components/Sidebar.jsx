@@ -1,53 +1,53 @@
 import React from "react";
-import {
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Toolbar,
-  Typography,
-} from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { Box, List, ListItem, ListItemText } from "@mui/material";
+import { Link } from "react-router-dom";
 
-const drawerWidth = 240;
-
-const Sidebar = () => {
-  const navigate = useNavigate();
-
-  const menuItems = [
-    { text: "Dashboard", path: "/admin/dashboard" },
-    { text: "Manage Users", path: "/admin/users" },
-    { text: "Settings", path: "/admin/settings" },
+const Sidebar = ({ role }) => {
+  const adminMenu = [
+    { name: "Dashboard", path: "/admin/dashboard" },
+    { name: "Manage Users", path: "/admin/users" },
+    { name: "Roles", path: "/admin/roles" },
+    { name: "Employees", path: "/hr/employees" }, 
+    { name: "Profile", path: "/admin/profile" },
   ];
 
-  return (
-    <Drawer
-      sx={{
-        width: drawerWidth,
-        flexShrink: 0,
-        "& .MuiDrawer-paper": {
-          width: drawerWidth,
-          boxSizing: "border-box",
-        },
-      }}
-      variant="permanent"
-      anchor="left"
-    >
-      <Toolbar>
-        <Typography variant="h6">Admin Panel</Typography>
-      </Toolbar>
+  const hrMenu = [
+    { name: "Dashboard", path: "/hr/dashboard" },
+    { name: "Employees", path: "/hr/employees" },
+  ];
 
+  const employeeMenu = [
+    { name: "My Profile", path: "/employee/profile" }
+  ];
+
+  let menu = [];
+
+  if (role === "admin") menu = adminMenu;
+  if (role === "hr") menu = hrMenu;
+  if (role === "employee") menu = employeeMenu;
+
+  return (
+    <Box
+      sx={{
+        width: 220,
+        backgroundColor: "#f5f5f5",
+        minHeight: "100vh",
+        pt: 2,
+      }}
+    >
       <List>
-        {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton onClick={() => navigate(item.path)}>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
+        {menu.map((item) => (
+          <ListItem
+            button
+            key={item.name}
+            component={Link}
+            to={item.path}
+          >
+            <ListItemText primary={item.name} />
           </ListItem>
         ))}
       </List>
-    </Drawer>
+    </Box>
   );
 };
 

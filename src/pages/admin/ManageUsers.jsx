@@ -52,10 +52,18 @@ const ManageUsers = () => {
   };
 
   const handleDelete = () => {
-    deleteUser(selectedUser.email);
-    setAlertMsg("User deleted successfully!");
-    setDeleteDialog(false);
-    loadUsers();
+    const result = deleteUser(selectedUser.email);
+
+if (!result.success) {
+  setAlertMsg(result.message);
+  setDeleteDialog(false);
+  return;
+}
+
+setAlertMsg("User deleted successfully!");
+setDeleteDialog(false);
+loadUsers();
+
   };
 
   return (
@@ -64,11 +72,19 @@ const ManageUsers = () => {
         Manage Users
       </Typography>
 
-      {alertMsg && (
-        <Alert severity="success" sx={{ mb: 2 }}>
-          {alertMsg}
-        </Alert>
-      )}
+{alertMsg && (
+  <Alert
+    severity={
+      alertMsg.toLowerCase().includes("cannot") ||
+      alertMsg.toLowerCase().includes("error")
+        ? "error"
+        : "success"
+    }
+    sx={{ mb: 2 }}
+  >
+    {alertMsg}
+  </Alert>
+)}
 
       <Button
         variant="contained"
