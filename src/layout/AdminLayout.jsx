@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AppBar,
   Toolbar,
@@ -32,7 +32,14 @@ const drawerWidth = 240;
 const AdminLayout = ({ children }) => {
   const [open, setOpen] = useState(true);
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, setUser } = useAuth();
+
+useEffect(() => {
+  const stored = JSON.parse(localStorage.getItem("app-user"));
+  if (stored) {
+    setUser(stored);
+  }
+}, []);
 
   const handleDrawerToggle = () => {
     setOpen((prev) => !prev);

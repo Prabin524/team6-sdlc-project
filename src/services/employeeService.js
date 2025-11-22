@@ -48,4 +48,5 @@ export const deleteEmployee = (id) => {
   const employees = getEmployees();
   const updated = employees.filter((e) => e.id !== id);
   saveEmployees(updated);
+  return { success: true };
 };

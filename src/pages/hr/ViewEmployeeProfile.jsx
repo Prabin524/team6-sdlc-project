@@ -20,7 +20,6 @@ const ViewEmployeeProfile = ({ open, onClose, employee }) => {
       <DialogTitle>Employee Profile</DialogTitle>
 
       <DialogContent>
-        {/* TOP SECTION WITH PHOTO + BASIC INFO */}
         <Box
           sx={{
             display: "flex",
@@ -32,27 +31,20 @@ const ViewEmployeeProfile = ({ open, onClose, employee }) => {
             backgroundColor: "#f5f5f5",
           }}
         >
-          <Avatar
-            src={employee.photo}
-            sx={{ width: 100, height: 100 }}
-          />
-
+          <Avatar src={employee.photo} sx={{ width: 100, height: 100 }} />
           <Box>
             <Typography variant="h5" sx={{ fontWeight: "bold" }}>
               {employee.fullname}
             </Typography>
-
             <Typography variant="subtitle1" sx={{ color: "gray" }}>
               {employee.jobTitle}
             </Typography>
-
             <Typography variant="body2" sx={{ color: "gray" }}>
               Employee ID: {employee.id}
             </Typography>
           </Box>
         </Box>
 
-        {/* DETAILS */}
         <Paper sx={{ p: 2 }}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
@@ -87,9 +79,7 @@ const ViewEmployeeProfile = ({ open, onClose, employee }) => {
 
             <Grid item xs={12} sm={6}>
               <Typography variant="subtitle2">Salary</Typography>
-              <Typography variant="body1">
-                ${employee.salary}
-              </Typography>
+              <Typography variant="body1">${employee.salary}</Typography>
             </Grid>
 
             <Grid item xs={12} sm={6}>

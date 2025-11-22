@@ -24,12 +24,12 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
   const [jobTitle, setJobTitle] = useState("");
   const [salary, setSalary] = useState("");
   const [manager, setManager] = useState("");
-  const [photo, setPhoto] = useState(null); // base64
+  const [photo, setPhoto] = useState(null);
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Reset all fields on open
+  // Reset fields when dialog opens
   useEffect(() => {
     if (open) {
       setFullname("");
@@ -47,23 +47,28 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
     }
   }, [open]);
 
-  // Generate next Employee ID
+  // Generate Employee ID safely
   const generateEmployeeID = () => {
     const employees = getEmployees();
+
+    if (!employees.length) return "EMP001";
+
     const last = employees[employees.length - 1];
 
-    if (!last) return "EMP001";
+    // If missing or incorrect ID → regenerate
+    if (!last.id || typeof last.id !== "string" || !last.id.startsWith("EMP")) {
+      return `EMP${(employees.length + 1).toString().padStart(3, "0")}`;
+    }
 
-    const lastID = parseInt(last.id.replace("EMP", ""));
-    const nextID = (lastID + 1).toString().padStart(3, "0");
+    const lastNum = parseInt(last.id.replace("EMP", ""), 10);
+    const nextNum = isNaN(lastNum) ? employees.length + 1 : lastNum + 1;
 
-    return `EMP${nextID}`;
+    return `EMP${nextNum.toString().padStart(3, "0")}`;
   };
 
-  // Validate email format
+  // Basic Email Validation
   const isValidEmail = (email) => /\S+@\S+\.\S+/.test(email);
 
-  // Validate and submit
   const handleAdd = () => {
     if (
       !fullname ||
@@ -86,7 +91,7 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
     }
 
     if (new Date(joinDate) <= new Date(dob)) {
-      setError("Join date must be after Date of Birth.");
+      setError("Join Date must be after Date of Birth.");
       return;
     }
 
@@ -101,7 +106,7 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
       jobTitle,
       salary,
       manager,
-      photo, // base64
+      photo,
     };
 
     const response = addEmployee(employee);
@@ -112,20 +117,17 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
     }
 
     setSuccess("Employee added successfully!");
-
     onSuccess();
     onClose();
   };
 
-  // Photo Upload Handler
+  // Convert image to Base64
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setPhoto(reader.result); // base64 string
-    };
+    reader.onloadend = () => setPhoto(reader.result);
 
     reader.readAsDataURL(file);
   };
@@ -135,36 +137,20 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
       <DialogTitle>Add New Employee</DialogTitle>
 
       <DialogContent>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-
-        {success && (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            {success}
-          </Alert>
-        )}
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
 
         {/* Profile Photo */}
         <Box sx={{ textAlign: "center", mb: 2 }}>
-          <Avatar
-            src={photo}
-            sx={{ width: 80, height: 80, margin: "auto" }}
-          />
+          <Avatar src={photo} sx={{ width: 80, height: 80, margin: "auto" }} />
 
-          <Button
-            variant="outlined"
-            component="label"
-            sx={{ mt: 1 }}
-          >
+          <Button variant="outlined" component="label" sx={{ mt: 1 }}>
             Upload Photo
             <input type="file" hidden accept="image/*" onChange={handlePhotoUpload} />
           </Button>
         </Box>
 
-        {/* Employee Form */}
+        {/* Form Fields */}
         <TextField
           fullWidth
           required
@@ -182,11 +168,7 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           error={email !== "" && !isValidEmail(email)}
-          helperText={
-            email !== "" && !isValidEmail(email)
-              ? "Invalid email"
-              : ""
-          }
+          helperText={email !== "" && !isValidEmail(email) ? "Invalid email" : ""}
         />
 
         <TextField
@@ -206,7 +188,7 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
           margin="dense"
           InputLabelProps={{ shrink: true }}
           value={dob}
-          onChange={(e) => setDob(e.target.target)}
+          onChange={(e) => setDob(e.target.value)}
         />
 
         <TextField
@@ -252,7 +234,7 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
           label="Salary"
           margin="dense"
           value={salary}
-          onChange={(e) => setSalary(e.target.value)}
+          onChange={(e) => setSalary(Number(e.target.value))}
         />
 
         <TextField

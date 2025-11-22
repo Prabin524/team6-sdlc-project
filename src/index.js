@@ -2,7 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App"; // ← ADD THIS
 import { AuthProvider } from "./context/AuthContext";
+import { fixEmployeeDB } from "./services/employeeFixer";
 
+fixEmployeeDB();
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(

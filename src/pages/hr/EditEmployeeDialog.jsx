@@ -38,7 +38,7 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
       setJoinDate(employee.joinDate || "");
       setDepartment(employee.department || "");
       setJobTitle(employee.jobTitle || "");
-      setSalary(employee.salary || "");
+      setSalary(employee.salary ?? "");
       setManager(employee.manager || "");
       setPhoto(employee.photo || null);
       setError("");
@@ -46,27 +46,28 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
     }
   }, [employee]);
 
-  // Email validation
-  const isValidEmail = (email) => /\S+@\S+\.\S+/.test(email);
+  const isValidEmail = (emailStr) => /\S+@\S+\.\S+/.test(emailStr);
 
-  // Save changes
   const handleUpdate = () => {
+    setError("");
+    setSuccess("");
+
     if (
-      !fullname ||
-      !email ||
-      !phone ||
+      !fullname.trim() ||
+      !email.trim() ||
+      !phone.trim() ||
       !dob ||
       !joinDate ||
       !department ||
-      !jobTitle ||
-      !salary ||
-      !manager
+      !jobTitle.trim() ||
+      salary === "" ||
+      !manager.trim()
     ) {
       setError("All fields are required.");
       return;
     }
 
-    if (!isValidEmail(email)) {
+    if (!isValidEmail(email.trim())) {
       setError("Invalid email format.");
       return;
     }
@@ -77,15 +78,15 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
     }
 
     const updatedData = {
-      fullname,
-      email,
-      phone,
+      fullname: fullname.trim(),
+      email: email.trim().toLowerCase(),
+      phone: phone.trim(),
       dob,
       joinDate,
       department,
-      jobTitle,
-      salary,
-      manager,
+      jobTitle: jobTitle.trim(),
+      salary: Number(salary),
+      manager: manager.trim(),
       photo,
     };
 
@@ -97,26 +98,20 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
     }
 
     setSuccess("Employee updated successfully!");
-
-    onSuccess();
-    onClose();
+    onSuccess?.();
+    onClose?.();
   };
 
-  // Photo uploader
   const handlePhotoUpload = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-
-    reader.onloadend = () => {
-      setPhoto(reader.result);
-    };
-
+    reader.onloadend = () => setPhoto(reader.result);
     reader.readAsDataURL(file);
   };
 
-  if (!employee) return null; // safeguard
+  if (!employee) return null;
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth>
@@ -128,28 +123,33 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
             {error}
           </Alert>
         )}
-
         {success && (
           <Alert severity="success" sx={{ mb: 2 }}>
             {success}
           </Alert>
         )}
 
-        {/* Profile Photo */}
         <Box sx={{ textAlign: "center", mb: 2 }}>
           <Avatar src={photo} sx={{ width: 80, height: 80, margin: "auto" }} />
-
-          <Button
-            variant="outlined"
-            component="label"
-            sx={{ mt: 1 }}
-          >
+          <Button variant="outlined" component="label" sx={{ mt: 1 }}>
             Change Photo
-            <input type="file" hidden accept="image/*" onChange={handlePhotoUpload} />
+            <input
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={handlePhotoUpload}
+            />
           </Button>
         </Box>
 
-        {/* Editable Form */}
+        <TextField
+          fullWidth
+          label="Employee ID"
+          margin="dense"
+          disabled
+          value={employee.id}
+        />
+
         <TextField
           fullWidth
           required
@@ -167,11 +167,7 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           error={email !== "" && !isValidEmail(email)}
-          helperText={
-            email !== "" && !isValidEmail(email)
-              ? "Invalid email"
-              : ""
-          }
+          helperText={email !== "" && !isValidEmail(email) ? "Invalid email" : ""}
         />
 
         <TextField
@@ -208,8 +204,8 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
         <TextField
           fullWidth
           required
-          label="Department"
           select
+          label="Department"
           margin="dense"
           value={department}
           onChange={(e) => setDepartment(e.target.value)}
@@ -252,7 +248,6 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
 
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-
         <Button variant="contained" onClick={handleUpdate}>
           Save Changes
         </Button>

@@ -51,16 +51,19 @@ const [confirmOpen, setConfirmOpen] = useState(false);
   const users = getUsers();
   const index = users.findIndex((u) => u.email === user.email);
 
-  users[index].fullname = fullname.trim();
+  const updatedUser = {
+    ...users[index],
+    fullname: fullname.trim(),
+  };
 
+  users[index] = updatedUser;
   saveUsers(users);
 
-  login(users[index], true);
+  login(updatedUser, true); // 🔥 NOW updates localStorage properly
 
   setSuccessMsg("Profile updated successfully!");
   setErrorMsg("");
 };
-
 
   const handlePasswordChange = () => {
     const users = getUsers();
