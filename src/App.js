@@ -19,11 +19,15 @@ import HRDashboard from "./pages/hr/HRDashboard";
 
 // Employee Page
 import EmployeeProfile from "./pages/employee/EmployeeProfile";
+import AttendanceHR from "./pages/hr/AttendanceHR";
+import AttendanceEmployee from "./pages/employee/AttendanceEmployee";
 
 // Protected Components
 import RequireAdmin from "./components/RequireAdmin";
 import RequireHR from "./components/RequireHR";
 import RequireEmployee from "./components/RequireEmployee";
+import PayrollHR from "./pages/hr/PayrollHR";
+import MyPayslips from "./pages/employee/MyPayslips";
 
 const ForgotPassword = () => <h1>Forgot Password Page</h1>;
 
@@ -104,7 +108,6 @@ function App() {
           }
         />
 
-        {/* ===================== EMPLOYEE ROUTES ===================== */}
 <Route
   path="/employee/profile"
   element={
@@ -115,6 +118,49 @@ function App() {
     </RequireEmployee>
   }
 />
+<Route
+  path="/hr/attendance"
+  element={
+    <RequireHR>
+      <HRLayout>
+        <AttendanceHR />
+      </HRLayout>
+    </RequireHR>
+  }
+/>
+
+<Route
+  path="/employee/attendance"
+  element={
+    <RequireEmployee>
+      <EmployeeLayout>
+        <AttendanceEmployee />
+      </EmployeeLayout>
+    </RequireEmployee>
+  }
+/>
+<Route
+  path="/hr/payroll"
+  element={
+    <RequireHR>
+      <HRLayout>
+        <PayrollHR />
+      </HRLayout>
+    </RequireHR>
+  }
+/>
+
+<Route
+  path="/employee/payslips"
+  element={
+    <RequireEmployee>
+      <EmployeeLayout>
+        <MyPayslips />
+      </EmployeeLayout>
+    </RequireEmployee>
+  }
+/>
+
       </Routes>
     </BrowserRouter>
   );

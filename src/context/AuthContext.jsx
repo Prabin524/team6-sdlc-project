@@ -4,34 +4,29 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const STORAGE_KEY = "app-user";
+  const [loading, setLoading] = useState(true); // NEW
 
-
-  // Always load user from localStorage on refresh
   useEffect(() => {
     const savedUser =
-  JSON.parse(localStorage.getItem(STORAGE_KEY)) ||
-  JSON.parse(sessionStorage.getItem(STORAGE_KEY));
-
+      JSON.parse(localStorage.getItem("app-user")) ||
+      JSON.parse(sessionStorage.getItem("app-user"));
 
     if (savedUser) {
       setUser(savedUser);
     }
+
+    setLoading(false); // done loading user
   }, []);
 
- const login = (userData, remember = true) => {
-  setUser(userData);
+  const login = (userData, remember) => {
+    setUser(userData);
 
-  if (remember) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
-    sessionStorage.removeItem(STORAGE_KEY);
-  } else {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
-    localStorage.removeItem(STORAGE_KEY);
-  }
-};
-
-
+    if (remember) {
+      localStorage.setItem("app-user", JSON.stringify(userData));
+    } else {
+      sessionStorage.setItem("app-user", JSON.stringify(userData));
+    }
+  };
 
   const logout = () => {
     localStorage.removeItem("app-user");
@@ -40,7 +35,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

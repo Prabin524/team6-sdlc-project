@@ -18,10 +18,10 @@ import MenuIcon from "@mui/icons-material/Menu";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
 import LogoutIcon from "@mui/icons-material/Logout";
-
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-
+import PaymentsIcon from '@mui/icons-material/Payments';
 const drawerWidth = 240;
 
 const HRLayout = ({ children }) => {
@@ -37,6 +37,8 @@ const HRLayout = ({ children }) => {
   const menuItems = [
     { text: "Dashboard", icon: <DashboardIcon />, path: "/hr/dashboard" },
     { text: "Employees", icon: <PeopleIcon />, path: "/hr/employees" },
+      { text: "Attendance", icon: <AccessTimeIcon />, path: "/hr/attendance" },
+      { text: "Payroll", icon: <PaymentsIcon />, path: "/hr/payroll" },
   ];
 
   const handleLogout = () => {

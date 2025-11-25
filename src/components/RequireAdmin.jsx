@@ -1,13 +1,14 @@
-import React from "react";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import AccessDenied from "./AccessDenied";
 
 const RequireAdmin = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
-  if (!user) return <AccessDenied />;  // user not loaded yet
+  if (loading) return null; // WAIT UNTIL USER IS LOADED
 
-  if (user.role !== "admin") return <AccessDenied />;
+  if (!user) return <Navigate to="/login" replace />;
+
+  if (user.role !== "admin") return <Navigate to="/login" replace />;
 
   return children;
 };
