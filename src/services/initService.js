@@ -1,19 +1,8 @@
-// =========================
-// LOCAL DB INITIALIZER (SAFE)
-// =========================
-
-// Increase this version if you ever want to refresh the default DB
-const DB_VERSION = 1;
-
+// Initialize default users ONLY if no users exist
 export const initializeLocalDB = () => {
   const existingUsers = JSON.parse(localStorage.getItem("users"));
-  const existingVersion = Number(localStorage.getItem("db-version")) || 0;
 
-  // If first time, or if empty array, or if version changed → rebuild defaults
-  const shouldInitialize =
-    !existingUsers || existingUsers.length === 0 || existingVersion < DB_VERSION;
-
-  if (shouldInitialize) {
+  if (!existingUsers || existingUsers.length === 0) {
     const defaultUsers = [
       {
         fullname: "System Administrator",
@@ -36,7 +25,5 @@ export const initializeLocalDB = () => {
     ];
 
     localStorage.setItem("users", JSON.stringify(defaultUsers));
-    localStorage.setItem("db-version", DB_VERSION);
-    console.log("%cLocal DB initialized with default users.", "color: green");
   }
 };

@@ -107,17 +107,6 @@ function App() {
             </RequireHR>
           }
         />
-
-<Route
-  path="/employee/profile"
-  element={
-    <RequireEmployee>
-      <EmployeeLayout>
-        <EmployeeProfile />
-      </EmployeeLayout>
-    </RequireEmployee>
-  }
-/>
 <Route
   path="/hr/attendance"
   element={
@@ -130,16 +119,6 @@ function App() {
 />
 
 <Route
-  path="/employee/attendance"
-  element={
-    <RequireEmployee>
-      <EmployeeLayout>
-        <AttendanceEmployee />
-      </EmployeeLayout>
-    </RequireEmployee>
-  }
-/>
-<Route
   path="/hr/payroll"
   element={
     <RequireHR>
@@ -149,17 +128,22 @@ function App() {
     </RequireHR>
   }
 />
-
+{/* ===================== EMPLOYEE ROUTES ===================== */}
 <Route
-  path="/employee/payslips"
+  path="/employee"
   element={
     <RequireEmployee>
-      <EmployeeLayout>
-        <MyPayslips />
-      </EmployeeLayout>
+      <EmployeeLayout />
     </RequireEmployee>
   }
-/>
+>
+  <Route index element={<EmployeeProfile />} />
+
+  <Route path="profile" element={<EmployeeProfile />} />
+  <Route path="attendance" element={<AttendanceEmployee />} />
+  <Route path="payslips" element={<MyPayslips />} />
+</Route>
+
 
       </Routes>
     </BrowserRouter>

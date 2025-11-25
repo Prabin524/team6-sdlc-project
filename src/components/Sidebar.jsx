@@ -57,7 +57,7 @@ const Sidebar = ({ role = "admin" }) => {
     menuItems = [
       { text: "Dashboard", icon: <DashboardIcon />, path: "/employee/dashboard" },
       { text: "My Profile", icon: <PersonIcon />, path: "/employee/profile" },
-      { text: "My Payslips", icon: <PaymentsIcon />, path: "/employee/payslips" }, // 👈 Added this
+      { text: "My Payslips", icon: <PaymentsIcon />, path: "/employee/payslips" }, // 
     ];
   }
 
