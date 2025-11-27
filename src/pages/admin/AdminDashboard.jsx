@@ -13,9 +13,11 @@ import {
   TableCell,
   TableBody
 } from "@mui/material";
-import { getSystemStats } from "../../services/adminStatsService";
+
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { getSystemStats } from "../../services/adminStatsService";
+import { getUsers } from "../../services/userService";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -23,14 +25,33 @@ const AdminDashboard = () => {
   const [filterStart, setFilterStart] = useState("");
   const [filterEnd, setFilterEnd] = useState("");
 
+  // Load stats but EXCLUDE EMPLOYEES
   const loadStats = () => {
     const result = getSystemStats();
+
     if (!result.success) {
       setError(result.error);
-    } else {
-      setStats(result.data);
-      setError("");
+      return;
     }
+
+    const users = getUsers();
+
+    const admins = users.filter((u) => u.role === "admin");
+    const hr = users.filter((u) => u.role === "hr");
+
+    const filteredLogins = result.data.recentLogins.filter(
+      (log) =>
+        log.role === "admin" || log.role === "hr" // 🔥 block employee logs
+    );
+
+    setStats({
+      totalAdmins: admins.length,
+      totalHR: hr.length,
+      recentLogins: filteredLogins,
+      activeToday: filteredLogins.length
+    });
+
+    setError("");
   };
 
   useEffect(() => {
@@ -54,25 +75,34 @@ const AdminDashboard = () => {
     });
   };
 
-  // Export to PDF
+  // Export PDF
   const exportPDF = () => {
     const doc = new jsPDF();
-    doc.text("System Activity Report", 14, 15);
+    doc.text("System Activity Report (Admin + HR Only)", 14, 15);
 
     autoTable(doc, {
-      head: [["Email", "Date", "Time"]],
-      body: stats.recentLogins.map((log) => [log.email, log.date, log.time])
+      head: [["Email", "Role", "Date", "Time"]],
+      body: stats.recentLogins.map((log) => [
+        log.email,
+        log.role,
+        log.date,
+        log.time
+      ])
     });
 
     doc.save("system-report.pdf");
   };
 
-  // Export to Excel
+  // Export Excel
   const exportExcel = () => {
     const data =
       "data:text/csv;charset=utf-8," +
-      ["Email,Date,Time"]
-        .concat(stats.recentLogins.map((l) => `${l.email},${l.date},${l.time}`))
+      ["Email,Role,Date,Time"]
+        .concat(
+          stats.recentLogins.map(
+            (l) => `${l.email},${l.role},${l.date},${l.time}`
+          )
+        )
         .join("\n");
 
     const link = document.createElement("a");
@@ -81,7 +111,7 @@ const AdminDashboard = () => {
     link.click();
   };
 
-  if (error) {
+  if (error)
     return (
       <Box>
         <Alert severity="error">{error}</Alert>
@@ -90,7 +120,6 @@ const AdminDashboard = () => {
         </Button>
       </Box>
     );
-  }
 
   if (!stats) return <Typography>Loading...</Typography>;
 
@@ -102,25 +131,25 @@ const AdminDashboard = () => {
         Admin Dashboard
       </Typography>
 
-      {/* STATS */}
+      {/* TOP STATS */}
       <Grid container spacing={3}>
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 3 }}>
-            <Typography variant="h6">Total Users</Typography>
-            <Typography variant="h3">{stats.totalUsers}</Typography>
+            <Typography variant="h6">Total Admins</Typography>
+            <Typography variant="h3">{stats.totalAdmins}</Typography>
           </Paper>
         </Grid>
 
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 3 }}>
-            <Typography variant="h6">Active Today</Typography>
-            <Typography variant="h3">{stats.activeToday}</Typography>
+            <Typography variant="h6">Total HR</Typography>
+            <Typography variant="h3">{stats.totalHR}</Typography>
           </Paper>
         </Grid>
 
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 3 }}>
-            <Typography variant="h6">Recent Logins</Typography>
+            <Typography variant="h6">Recent Logins (Admin + HR)</Typography>
             <Typography variant="h3">{stats.recentLogins.length}</Typography>
           </Paper>
         </Grid>
@@ -164,11 +193,12 @@ const AdminDashboard = () => {
           </Button>
         </Box>
 
-        {/* TABLE OF LOGINS */}
+        {/* LOGIN TABLE */}
         <Table>
           <TableHead>
             <TableRow>
               <TableCell>Email</TableCell>
+              <TableCell>Role</TableCell>
               <TableCell>Date</TableCell>
               <TableCell>Time</TableCell>
             </TableRow>
@@ -179,6 +209,7 @@ const AdminDashboard = () => {
               filteredLogs.map((log, index) => (
                 <TableRow key={index}>
                   <TableCell>{log.email}</TableCell>
+                  <TableCell>{log.role}</TableCell>
                   <TableCell>{log.date}</TableCell>
                   <TableCell>{log.time}</TableCell>
                 </TableRow>

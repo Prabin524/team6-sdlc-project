@@ -1,3 +1,4 @@
+// src/pages/admin/ManageUsers.jsx
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -34,7 +35,12 @@ const ManageUsers = () => {
   const [selectedUser, setSelectedUser] = useState(null);
 
   const loadUsers = () => {
-    setUsers(getUsers());
+    // 🔥 Only Admin + HR should be visible here
+    const allUsers = getUsers();
+    const filtered = allUsers.filter(
+      (u) => u.role === "admin" || u.role === "hr"
+    );
+    setUsers(filtered);
   };
 
   useEffect(() => {
@@ -52,46 +58,47 @@ const ManageUsers = () => {
   };
 
   const handleDelete = () => {
+    if (!selectedUser) return;
+
     const result = deleteUser(selectedUser.email);
 
-if (!result.success) {
-  setAlertMsg(result.message);
-  setDeleteDialog(false);
-  return;
-}
+    if (!result.success) {
+      setAlertMsg(result.message);
+      setDeleteDialog(false);
+      return;
+    }
 
-setAlertMsg("User deleted successfully!");
-setDeleteDialog(false);
-loadUsers();
-
+    setAlertMsg("User deleted successfully!");
+    setDeleteDialog(false);
+    loadUsers();
   };
 
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Manage Users
+        Manage Users (Admin & HR Only)
       </Typography>
 
-{alertMsg && (
-  <Alert
-    severity={
-      alertMsg.toLowerCase().includes("cannot") ||
-      alertMsg.toLowerCase().includes("error")
-        ? "error"
-        : "success"
-    }
-    sx={{ mb: 2 }}
-  >
-    {alertMsg}
-  </Alert>
-)}
+      {alertMsg && (
+        <Alert
+          severity={
+            alertMsg.toLowerCase().includes("cannot") ||
+            alertMsg.toLowerCase().includes("error")
+              ? "error"
+              : "success"
+          }
+          sx={{ mb: 2 }}
+        >
+          {alertMsg}
+        </Alert>
+      )}
 
       <Button
         variant="contained"
         startIcon={<AddIcon />}
         onClick={() => setAddDialog(true)}
       >
-        Add New User
+        Add Admin / HR
       </Button>
 
       <Paper sx={{ mt: 3 }}>
@@ -137,6 +144,14 @@ loadUsers();
                 </TableCell>
               </TableRow>
             ))}
+
+            {users.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  No Admin / HR users found.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </Paper>

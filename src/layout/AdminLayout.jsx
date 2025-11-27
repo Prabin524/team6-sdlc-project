@@ -17,12 +17,9 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import GroupIcon from "@mui/icons-material/Group";
-import PeopleIcon from "@mui/icons-material/People";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
-
 
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -34,26 +31,22 @@ const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
   const { user, logout, setUser } = useAuth();
 
-useEffect(() => {
-  const stored = JSON.parse(localStorage.getItem("app-user"));
-  if (stored) {
-    setUser(stored);
-  }
-}, []);
+  // load user on refresh
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem("app-user"));
+    if (stored) setUser(stored);
+  }, []);
 
-  const handleDrawerToggle = () => {
-    setOpen((prev) => !prev);
-  };
+  const handleDrawerToggle = () => setOpen((prev) => !prev);
 
-  const menuItems = [
+  // ===========================
+  // ✅ FILTERED ADMIN MENU ONLY
+  // ===========================
+  const adminMenu = [
     { text: "Dashboard", icon: <DashboardIcon />, path: "/admin/dashboard" },
     { text: "Manage Users", icon: <GroupIcon />, path: "/admin/users" },
     { text: "Roles", icon: <SettingsIcon />, path: "/admin/roles" },
-    { text: "Employees", icon: <PeopleIcon />, path: "/admin/employees" },
-    { text: "Attendance", icon: <AccessTimeIcon />, path: "/admin/attendance" },
-    { text: "Settings", icon: <SettingsIcon />, path: "/admin/settings" },
-    { text: "Profile", icon: <PersonIcon />, path: "/admin/profile" }
-
+    { text: "Profile", icon: <PersonIcon />, path: "/admin/profile" },
   ];
 
   const handleLogout = () => {
@@ -62,7 +55,7 @@ useEffect(() => {
   };
 
   return (
-<Box sx={{ width: "100%", mt: 2 }}>
+    <Box sx={{ width: "100%", mt: 2 }}>
       <CssBaseline />
 
       {/* Top Navbar */}
@@ -74,19 +67,13 @@ useEffect(() => {
         }}
       >
         <Toolbar>
-          <IconButton
-            color="inherit"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2 }}
-          >
+          <IconButton color="inherit" edge="start" onClick={handleDrawerToggle} sx={{ mr: 2 }}>
             <MenuIcon />
           </IconButton>
 
-         <Typography variant="h6" sx={{ flexGrow: 1 }}>
-  Welcome, {user?.fullname || "User"} – {user?.role?.toUpperCase()}
-</Typography>
-
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Welcome, {user?.fullname || "User"} – {user?.role?.toUpperCase()}
+          </Typography>
 
           <IconButton color="inherit" onClick={handleLogout}>
             <LogoutIcon />
@@ -94,7 +81,7 @@ useEffect(() => {
         </Toolbar>
       </AppBar>
 
-      {/* Sidebar Drawer */}
+      {/* Sidebar */}
       <Drawer
         variant="permanent"
         open={open}
@@ -112,7 +99,7 @@ useEffect(() => {
         <Toolbar />
 
         <List>
-          {menuItems.map((item) => (
+          {adminMenu.map((item) => (
             <ListItem key={item.text} disablePadding sx={{ display: "block" }}>
               <ListItemButton
                 onClick={() => navigate(item.path)}
@@ -131,15 +118,13 @@ useEffect(() => {
                 >
                   {item.icon}
                 </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  sx={{ opacity: open ? 1 : 0 }}
-                />
+
+                <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0 }} />
               </ListItemButton>
             </ListItem>
           ))}
 
-          {/* Logout in sidebar too (optional) */}
+          {/* Logout button */}
           <ListItem disablePadding sx={{ display: "block", mt: 2 }}>
             <ListItemButton
               onClick={handleLogout}
@@ -158,16 +143,13 @@ useEffect(() => {
               >
                 <LogoutIcon />
               </ListItemIcon>
-              <ListItemText
-                primary="Logout"
-                sx={{ opacity: open ? 1 : 0 }}
-              />
+              <ListItemText primary="Logout" sx={{ opacity: open ? 1 : 0 }} />
             </ListItemButton>
           </ListItem>
         </List>
       </Drawer>
 
-      {/* Main Content */}
+      {/* Main Page Content */}
       <Box
         component="main"
         sx={{

@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 
 import { updateEmployee } from "../../services/employeeService";
+import { getUsers, updateUser } from "../../services/userService";
 
 const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
   const [fullname, setFullname] = useState("");
@@ -25,6 +26,9 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
   const [salary, setSalary] = useState("");
   const [manager, setManager] = useState("");
   const [photo, setPhoto] = useState(null);
+
+  // ⭐ New: password reset
+  const [password, setPassword] = useState("");
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -41,6 +45,7 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
       setSalary(employee.salary ?? "");
       setManager(employee.manager || "");
       setPhoto(employee.photo || null);
+      setPassword(""); // blank by default (only reset if HR enters)
       setError("");
       setSuccess("");
     }
@@ -63,7 +68,7 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
       salary === "" ||
       !manager.trim()
     ) {
-      setError("All fields are required.");
+      setError("All fields except password are required.");
       return;
     }
 
@@ -90,14 +95,37 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
       photo,
     };
 
+    // ===================== UPDATE EMPLOYEE DB =====================
     const result = updateEmployee(employee.id, updatedData);
-
     if (!result.success) {
       setError(result.message || "Failed to update employee.");
       return;
     }
 
-    setSuccess("Employee updated successfully!");
+    // ===================== UPDATE USER LOGIN DB =====================
+    const users = getUsers();
+    const loginUser = users.find((u) => u.email === employee.email);
+
+    if (loginUser) {
+      const loginUpdates = {
+        fullname,
+        email: email.trim().toLowerCase(),
+      };
+
+      // HR entered a new password → update it
+      if (password.trim() !== "") {
+        loginUpdates.password = password.trim();
+      }
+
+      const loginResult = updateUser(employee.email, loginUpdates);
+
+      if (!loginResult.success) {
+        setError("Employee updated but login update failed: " + loginResult.message);
+        return;
+      }
+    }
+
+    setSuccess("Employee & Login updated successfully!");
     onSuccess?.();
     onClose?.();
   };
@@ -118,37 +146,18 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
       <DialogTitle>Edit Employee</DialogTitle>
 
       <DialogContent>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-        {success && (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            {success}
-          </Alert>
-        )}
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
 
         <Box sx={{ textAlign: "center", mb: 2 }}>
           <Avatar src={photo} sx={{ width: 80, height: 80, margin: "auto" }} />
           <Button variant="outlined" component="label" sx={{ mt: 1 }}>
             Change Photo
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              onChange={handlePhotoUpload}
-            />
+            <input type="file" hidden accept="image/*" onChange={handlePhotoUpload} />
           </Button>
         </Box>
 
-        <TextField
-          fullWidth
-          label="Employee ID"
-          margin="dense"
-          disabled
-          value={employee.id}
-        />
+        <TextField fullWidth label="Employee ID" margin="dense" disabled value={employee.id} />
 
         <TextField
           fullWidth
@@ -162,12 +171,23 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
         <TextField
           fullWidth
           required
-          label="Email"
+          label="Email (Username)"
           margin="dense"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           error={email !== "" && !isValidEmail(email)}
           helperText={email !== "" && !isValidEmail(email) ? "Invalid email" : ""}
+        />
+
+        {/* ⭐ NEW PASSWORD RESET FIELD */}
+        <TextField
+          fullWidth
+          label="Reset Password (optional)"
+          margin="dense"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          helperText="Leave empty to keep current password"
         />
 
         <TextField

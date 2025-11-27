@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AppBar,
   Toolbar,
@@ -18,27 +18,33 @@ import MenuIcon from "@mui/icons-material/Menu";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
 import LogoutIcon from "@mui/icons-material/Logout";
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import PaymentsIcon from "@mui/icons-material/Payments";
+
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import PaymentsIcon from '@mui/icons-material/Payments';
+
 const drawerWidth = 240;
 
 const HRLayout = ({ children }) => {
   const [open, setOpen] = useState(true);
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, setUser } = useAuth();
 
-  const handleDrawerToggle = () => {
-    setOpen((prev) => !prev);
-  };
+  //  Load logged-in user when refreshing page
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem("app-user"));
+    if (stored) setUser(stored);
+  }, []);
 
-  // ⭐ HR MENU ITEMS ONLY
+  const handleDrawerToggle = () => setOpen((prev) => !prev);
+
+  // HR ROLE MENU ONLY
   const menuItems = [
     { text: "Dashboard", icon: <DashboardIcon />, path: "/hr/dashboard" },
     { text: "Employees", icon: <PeopleIcon />, path: "/hr/employees" },
-      { text: "Attendance", icon: <AccessTimeIcon />, path: "/hr/attendance" },
-      { text: "Payroll", icon: <PaymentsIcon />, path: "/hr/payroll" },
+    { text: "Attendance", icon: <AccessTimeIcon />, path: "/hr/attendance" },
+    { text: "Payroll", icon: <PaymentsIcon />, path: "/hr/payroll" },
   ];
 
   const handleLogout = () => {
@@ -50,7 +56,7 @@ const HRLayout = ({ children }) => {
     <Box sx={{ width: "100%", mt: 2 }}>
       <CssBaseline />
 
-      {/* Top Navbar */}
+      {/* 🔷 Top Navbar */}
       <AppBar
         position="fixed"
         sx={{
@@ -78,7 +84,7 @@ const HRLayout = ({ children }) => {
         </Toolbar>
       </AppBar>
 
-      {/* Sidebar Drawer */}
+      {/* 🔷 Sidebar Drawer */}
       <Drawer
         variant="permanent"
         open={open}
@@ -116,12 +122,15 @@ const HRLayout = ({ children }) => {
                   {item.icon}
                 </ListItemIcon>
 
-                <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0 }} />
+                <ListItemText
+                  primary={item.text}
+                  sx={{ opacity: open ? 1 : 0 }}
+                />
               </ListItemButton>
             </ListItem>
           ))}
 
-          {/* Logout in sidebar */}
+          {/* 🔷 Logout Button */}
           <ListItem disablePadding sx={{ display: "block", mt: 2 }}>
             <ListItemButton
               onClick={handleLogout}
@@ -140,14 +149,13 @@ const HRLayout = ({ children }) => {
               >
                 <LogoutIcon />
               </ListItemIcon>
-
               <ListItemText primary="Logout" sx={{ opacity: open ? 1 : 0 }} />
             </ListItemButton>
           </ListItem>
         </List>
       </Drawer>
 
-      {/* Main Content */}
+      {/*Main Content */}
       <Box
         component="main"
         sx={{

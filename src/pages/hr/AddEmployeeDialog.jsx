@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 
 import { addEmployee, getEmployees } from "../../services/employeeService";
+import { getUsers, saveUsers } from "../../services/userService";
 
 const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
   const [fullname, setFullname] = useState("");
@@ -27,9 +28,9 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
   const [photo, setPhoto] = useState(null);
 
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [loginInfo, setLoginInfo] = useState(null);
 
-  // Reset fields when dialog opens
+  // Reset form when opened
   useEffect(() => {
     if (open) {
       setFullname("");
@@ -43,33 +44,31 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
       setManager("");
       setPhoto(null);
       setError("");
-      setSuccess("");
+      setLoginInfo(null);
     }
   }, [open]);
 
-  // Generate Employee ID safely
+  // Generate Employee ID
   const generateEmployeeID = () => {
     const employees = getEmployees();
-
     if (!employees.length) return "EMP001";
 
     const last = employees[employees.length - 1];
+    const lastNum = parseInt(last.id?.replace("EMP", "") || 0, 10) + 1;
 
-    // If missing or incorrect ID → regenerate
-    if (!last.id || typeof last.id !== "string" || !last.id.startsWith("EMP")) {
-      return `EMP${(employees.length + 1).toString().padStart(3, "0")}`;
-    }
-
-    const lastNum = parseInt(last.id.replace("EMP", ""), 10);
-    const nextNum = isNaN(lastNum) ? employees.length + 1 : lastNum + 1;
-
-    return `EMP${nextNum.toString().padStart(3, "0")}`;
+    return `EMP${String(lastNum).padStart(3, "0")}`;
   };
 
-  // Basic Email Validation
-  const isValidEmail = (email) => /\S+@\S+\.\S+/.test(email);
+  const isValidEmail = (emailStr) => /\S+@\S+\.\S+/.test(emailStr);
+
+  const generatePassword = () =>
+    Math.random().toString(36).slice(-8); // random 8 char password
 
   const handleAdd = () => {
+    setError("");
+    setLoginInfo(null);
+
+    // Basic validation
     if (
       !fullname ||
       !email ||
@@ -86,7 +85,7 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
     }
 
     if (!isValidEmail(email)) {
-      setError("Invalid email format");
+      setError("Invalid email format.");
       return;
     }
 
@@ -95,8 +94,22 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
       return;
     }
 
+    const id = generateEmployeeID();
+
+    // ------------------------------
+    // 1️⃣ VALIDATE LOGIN EMAIL FIRST
+    // ------------------------------
+    const users = getUsers();
+    if (users.some((u) => u.email === email)) {
+      setError("An user account already exists with this email.");
+      return;
+    }
+
+    // ------------------------------
+    // 2️⃣ CREATE EMPLOYEE RECORD
+    // ------------------------------
     const employee = {
-      id: generateEmployeeID(),
+      id,
       fullname,
       email,
       phone,
@@ -109,26 +122,47 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
       photo,
     };
 
-    const response = addEmployee(employee);
-
-    if (!response.success) {
-      setError(response.message);
+    const result = addEmployee(employee);
+    if (!result.success) {
+      setError(result.message);
       return;
     }
 
-    setSuccess("Employee added successfully!");
-    onSuccess();
-    onClose();
+    // ------------------------------
+    // 3️⃣ CREATE EMPLOYEE LOGIN
+    // ------------------------------
+    const tempPassword = generatePassword();
+
+    const newUser = {
+      fullname,
+      email,
+      password: tempPassword,
+      role: "employee",
+      status: "active",
+    };
+
+    users.push(newUser);
+    saveUsers(users);
+
+    // ------------------------------
+    // 4️⃣ SHOW SUCCESS POPUP
+    // ------------------------------
+    setLoginInfo({
+      id,
+      email,
+      password: tempPassword,
+    });
+
+    // Parent list reload only
+    onSuccess(); // DOES NOT CLOSE DIALOG
   };
 
-  // Convert image to Base64
   const handlePhotoUpload = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onloadend = () => setPhoto(reader.result);
-
     reader.readAsDataURL(file);
   };
 
@@ -137,20 +171,38 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
       <DialogTitle>Add New Employee</DialogTitle>
 
       <DialogContent>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+        {/* Error Notice */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
 
-        {/* Profile Photo */}
+        {/* SUCCESS POPUP */}
+        {loginInfo && (
+          <Alert severity="success" sx={{ mb: 2 }}>
+            <strong>Employee Created Successfully!</strong>
+            <br />
+            <strong>Employee ID:</strong> {loginInfo.id}
+            <br />
+            <strong>Email:</strong> {loginInfo.email}
+            <br />
+            <strong>Temporary Password:</strong> {loginInfo.password}
+            <br />
+            Provide these login credentials to the employee.
+          </Alert>
+        )}
+
+        {/* PHOTO */}
         <Box sx={{ textAlign: "center", mb: 2 }}>
           <Avatar src={photo} sx={{ width: 80, height: 80, margin: "auto" }} />
-
           <Button variant="outlined" component="label" sx={{ mt: 1 }}>
             Upload Photo
-            <input type="file" hidden accept="image/*" onChange={handlePhotoUpload} />
+            <input hidden type="file" accept="image/*" onChange={handlePhotoUpload} />
           </Button>
         </Box>
 
-        {/* Form Fields */}
+        {/* FORM FIELDS */}
         <TextField
           fullWidth
           required
@@ -168,7 +220,6 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           error={email !== "" && !isValidEmail(email)}
-          helperText={email !== "" && !isValidEmail(email) ? "Invalid email" : ""}
         />
 
         <TextField
@@ -234,7 +285,7 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
           label="Salary"
           margin="dense"
           value={salary}
-          onChange={(e) => setSalary(Number(e.target.value))}
+          onChange={(e) => setSalary(e.target.value)}
         />
 
         <TextField
@@ -248,9 +299,14 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={onClose}>Close</Button>
 
-        <Button variant="contained" onClick={handleAdd}>
+        {/* Only disabled when already created */}
+        <Button
+          variant="contained"
+          onClick={handleAdd}
+          disabled={!!loginInfo}
+        >
           Add Employee
         </Button>
       </DialogActions>

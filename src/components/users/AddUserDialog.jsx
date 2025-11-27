@@ -1,3 +1,4 @@
+// src/components/users/AddUserDialog.jsx
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -15,40 +16,36 @@ import { addUser } from "../../services/userService";
 const AddUserDialog = ({ open, onClose, onSuccess }) => {
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState("admin");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  // Reset all fields when dialog opens
   useEffect(() => {
     if (open) {
       setFullname("");
       setEmail("");
-      setRole("");
+      setRole("admin");
       setPassword("");
       setError("");
     }
   }, [open]);
 
-  // Email validation regex
-  const validateEmail = (email) => {
-    return /^\S+@\S+\.\S+$/.test(email);
-  };
+  const isValidEmail = (value) => /\S+@\S+\.\S+/.test(value);
 
   const handleAdd = () => {
-    // Validations
     if (!fullname || !email || !password || !role) {
       setError("All fields are required");
       return;
     }
 
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address");
+    if (!isValidEmail(email)) {
+      setError("Invalid email format");
       return;
     }
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters long");
+    // 🔥 Only admin & hr allowed from this dialog
+    if (role === "employee") {
+      setError("Employee accounts must be created by HR, not Admin.");
       return;
     }
 
@@ -70,15 +67,9 @@ const AddUserDialog = ({ open, onClose, onSuccess }) => {
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={() => {
-        setError("");
-        onClose();
-      }}
-      fullWidth
-    >
-      <DialogTitle>Add New User</DialogTitle>
+    <Dialog open={open} onClose={onClose} fullWidth>
+      <DialogTitle>Add Admin / HR User</DialogTitle>
+
       <DialogContent>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -102,11 +93,9 @@ const AddUserDialog = ({ open, onClose, onSuccess }) => {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          error={email !== "" && !validateEmail(email)}
+          error={email !== "" && !isValidEmail(email)}
           helperText={
-            email !== "" && !validateEmail(email)
-              ? "Invalid email format"
-              : ""
+            email !== "" && !isValidEmail(email) ? "Invalid email format" : ""
           }
         />
 
@@ -114,16 +103,10 @@ const AddUserDialog = ({ open, onClose, onSuccess }) => {
           fullWidth
           type="password"
           label="Password"
-          margin="dense"
           required
+          margin="dense"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          error={password !== "" && password.length < 6}
-          helperText={
-            password !== "" && password.length < 6
-              ? "Password must be at least 6 characters"
-              : ""
-          }
         />
 
         <TextField
@@ -137,32 +120,12 @@ const AddUserDialog = ({ open, onClose, onSuccess }) => {
         >
           <MenuItem value="admin">Admin</MenuItem>
           <MenuItem value="hr">HR</MenuItem>
-          <MenuItem value="employee">Employee</MenuItem>
         </TextField>
       </DialogContent>
 
       <DialogActions>
-        <Button
-          onClick={() => {
-            setError("");
-            onClose();
-          }}
-        >
-          Cancel
-        </Button>
-
-        <Button
-          variant="contained"
-          onClick={handleAdd}
-          disabled={
-            !fullname ||
-            !email ||
-            !password ||
-            !role ||
-            !validateEmail(email) ||
-            password.length < 6
-          }
-        >
+        <Button onClick={onClose}>Cancel</Button>
+        <Button variant="contained" onClick={handleAdd}>
           Save
         </Button>
       </DialogActions>

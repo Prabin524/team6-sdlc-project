@@ -1,3 +1,4 @@
+// src/components/users/EditUserDialog.jsx
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -7,7 +8,7 @@ import {
   Button,
   TextField,
   MenuItem,
-  Alert
+  Alert,
 } from "@mui/material";
 
 import { updateUser } from "../../services/userService";
@@ -19,15 +20,24 @@ const EditUserDialog = ({ open, onClose, user, onSuccess }) => {
 
   useEffect(() => {
     if (user) {
-      setFullname(user.fullname);
-      setRole(user.role);
+      setFullname(user.fullname || "");
+      setRole(user.role || "");
+      setError("");
     }
-
-    // always reset error when opening a new dialog
-    setError("");
-  }, [user, open]);
+  }, [user]);
 
   const handleSave = () => {
+    if (!fullname || !role) {
+      setError("Full Name and Role are required");
+      return;
+    }
+
+    // 🔥 Block changing to employee from this dialog
+    if (role === "employee") {
+      setError("You cannot change role to Employee here.");
+      return;
+    }
+
     const result = updateUser(user.email, { fullname, role });
 
     if (!result.success) {
@@ -40,14 +50,7 @@ const EditUserDialog = ({ open, onClose, user, onSuccess }) => {
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={() => {
-        setError("");
-        onClose();
-      }}
-      fullWidth
-    >
+    <Dialog open={open} onClose={onClose} fullWidth>
       <DialogTitle>Edit User</DialogTitle>
 
       <DialogContent>
@@ -57,12 +60,19 @@ const EditUserDialog = ({ open, onClose, user, onSuccess }) => {
           </Alert>
         )}
 
-        <TextField fullWidth label="Email" margin="dense" disabled value={user?.email || ""} />
+        <TextField
+          fullWidth
+          label="Email"
+          margin="dense"
+          disabled
+          value={user?.email || ""}
+        />
 
         <TextField
           fullWidth
           label="Full Name"
           margin="dense"
+          required
           value={fullname}
           onChange={(e) => setFullname(e.target.value)}
         />
@@ -77,20 +87,11 @@ const EditUserDialog = ({ open, onClose, user, onSuccess }) => {
         >
           <MenuItem value="admin">Admin</MenuItem>
           <MenuItem value="hr">HR</MenuItem>
-          <MenuItem value="employee">Employee</MenuItem>
         </TextField>
       </DialogContent>
 
       <DialogActions>
-        <Button
-          onClick={() => {
-            setError("");
-            onClose();
-          }}
-        >
-          Cancel
-        </Button>
-
+        <Button onClick={onClose}>Cancel</Button>
         <Button variant="contained" onClick={handleSave}>
           Update
         </Button>
