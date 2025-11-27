@@ -144,17 +144,13 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
     users.push(newUser);
     saveUsers(users);
 
-    // ------------------------------
-    // 4️⃣ SHOW SUCCESS POPUP
-    // ------------------------------
     setLoginInfo({
       id,
       email,
       password: tempPassword,
     });
 
-    // Parent list reload only
-    onSuccess(); // DOES NOT CLOSE DIALOG
+    onSuccess(); 
   };
 
   const handlePhotoUpload = (e) => {
