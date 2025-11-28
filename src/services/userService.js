@@ -1,6 +1,3 @@
-// ===================== USER SERVICE =====================
-
-// Fetch all users (Admin, HR, Employees)
 export const getUsers = () => {
   return JSON.parse(localStorage.getItem("users")) || [];
 };
@@ -37,14 +34,27 @@ export const updateUser = (email, updatedData) => {
 
 // Delete a user
 export const deleteUser = (email) => {
-  const users = getUsers().filter((u) => u.email !== email);
-  saveUsers(users);
+  const users = getUsers();
+
+  const adminCount = users.filter((u) => u.role === "admin").length;
+  const userToDelete = users.find((u) => u.email === email);
+
+  //prevent deleting LAST admin
+  if (userToDelete?.role === "admin" && adminCount === 1) {
+    return {
+      success: false,
+      message: "You cannot delete the last Admin!",
+    };
+  }
+
+  // Proceed to delete
+  const updated = users.filter((u) => u.email !== email);
+  saveUsers(updated);
 
   return { success: true };
 };
 
-// ===================== EMPLOYEE-AUTO-LOGIN CREATION =====================
-// Called when HR creates a new employee
+// EMPLOYEE-AUTO-LOGIN CREATION
 export const addEmployeeLogin = (fullname, email) => {
   const users = getUsers();
 
@@ -60,7 +70,7 @@ export const addEmployeeLogin = (fullname, email) => {
   const password = Math.random().toString(36).slice(-8);
 
   const newUser = {
-    fullname,      // MUST be "fullname" (lowercase n)
+    fullname,
     email,
     password,
     role: "employee",
