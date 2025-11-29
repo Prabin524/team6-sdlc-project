@@ -59,7 +59,7 @@ const [confirmOpen, setConfirmOpen] = useState(false);
   users[index] = updatedUser;
   saveUsers(users);
 
-  login(updatedUser, true); // 🔥 NOW updates localStorage properly
+  login(updatedUser, true); 
 
   setSuccessMsg("Profile updated successfully!");
   setErrorMsg("");

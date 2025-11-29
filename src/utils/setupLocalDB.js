@@ -1,35 +1,31 @@
-// =========================
-// LOCAL DB INITIALIZER (SAFE)
-// =========================
-
-// Increase this version if you ever want to refresh the default DB
+// local Databbase
 const DB_VERSION = 1;
 
 export const initializeLocalDB = () => {
   const existingUsers = JSON.parse(localStorage.getItem("users"));
   const existingVersion = Number(localStorage.getItem("db-version")) || 0;
 
-  // If first time, or if empty array, or if version changed → rebuild defaults
+  // for first login User and Password
   const shouldInitialize =
     !existingUsers || existingUsers.length === 0 || existingVersion < DB_VERSION;
 
   if (shouldInitialize) {
     const defaultUsers = [
       {
-        fullname: "System Administrator",
-        email: "admin@example.com",
+        fullname: "System Admin",
+        email: "admin@mail.com",
         password: "admin123",
         role: "admin",
       },
       {
         fullname: "Human Resource Manager",
-        email: "hr@example.com",
+        email: "hr@mail.com",
         password: "hr123",
         role: "hr",
       },
       {
-        fullname: "General Employee",
-        email: "user@example.com",
+        fullname: "Employee",
+        email: "employee@mail.com",
         password: "user123",
         role: "employee",
       },

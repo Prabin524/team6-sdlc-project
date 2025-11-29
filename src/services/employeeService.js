@@ -10,7 +10,7 @@ export const initEmployeeDB = () => {
   }
 };
 
-// --- HELPER: Get users table ---
+// Get users table
 const getUsers = () => JSON.parse(localStorage.getItem(USER_KEY)) || [];
 const saveUsers = (users) =>
   localStorage.setItem(USER_KEY, JSON.stringify(users));
@@ -23,7 +23,7 @@ export const saveEmployees = (employees) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(employees));
 };
 
-// 🔥 Create employee + login user together
+// Create employee + login user together
 export const addEmployee = (employee) => {
   const employees = getEmployees();
   const users = getUsers();

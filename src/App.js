@@ -40,7 +40,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        {/* ===================== ADMIN ROUTES ===================== */}
+
+        {/*  ADMIN ROUTES  */}
         <Route
           path="/admin/dashboard"
           element={
@@ -85,7 +86,7 @@ function App() {
           }
         />
 
-        {/* ===================== HR ROUTES ===================== */}
+        {/*  HR ROUTES  */}
         <Route
           path="/hr/employees"
           element={
@@ -128,7 +129,7 @@ function App() {
     </RequireHR>
   }
 />
-{/* ===================== EMPLOYEE ROUTES ===================== */}
+{/*  EMPLOYEE ROUTES s */}
 <Route
   path="/employee"
   element={

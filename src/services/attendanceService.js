@@ -41,7 +41,7 @@ export const deleteAttendance = (email, date) => {
   return { success: true };
 };
 
-// Helper: get attendance for one employee
+//  get attendance for one employee
 export const getAttendanceByEmail = (email) => {
   return getAttendance().filter((r) => r.email === email);
 };

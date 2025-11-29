@@ -1,11 +1,10 @@
-// Save login logs
 const saveLoginLog = (email, role) => {
   const logs = JSON.parse(localStorage.getItem("login_logs")) || [];
 
   logs.push({
     email,
     role,
-    date: new Date().toISOString().split("T")[0],
+    date: new Date().toISOString().split("T")[0], 
     time: new Date().toLocaleTimeString()
   });
 
@@ -22,12 +21,16 @@ export const loginUser = (email, password) => {
 
     setTimeout(() => {
       if (user) {
+
+        saveLoginLog(user.email, user.role);
+
         resolve({
           email: user.email,
           fullname: user.fullname,
           role: user.role,
           token: "local-token-123"
         });
+
       } else {
         reject("Invalid email or password");
       }

@@ -39,9 +39,7 @@ const AdminLayout = ({ children }) => {
 
   const handleDrawerToggle = () => setOpen((prev) => !prev);
 
-  // ===========================
-  // ✅ FILTERED ADMIN MENU ONLY
-  // ===========================
+  // FILTERED ADMIN MENU ONLY
   const adminMenu = [
     { text: "Dashboard", icon: <DashboardIcon />, path: "/admin/dashboard" },
     { text: "Manage Users", icon: <GroupIcon />, path: "/admin/users" },
