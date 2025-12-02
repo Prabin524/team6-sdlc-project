@@ -9,6 +9,11 @@ import {
   TableCell,
   TableBody,
   Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert
 } from "@mui/material";
 
 import AddEmployeeDialog from "./AddEmployeeDialog";
@@ -21,10 +26,16 @@ import {
   saveEmployees,
 } from "../../services/employeeService";
 
+import { getUsers, saveUsers } from "../../services/userService";
+
 import DeleteConfirmDialog from "../../components/DeleteConfirmDialog";
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { message } from "antd";
+
+// Allowed departments
+const VALID_DEPARTMENTS = ["HR", "Finance", "Engineering", "Marketing", "Operations"];
 
 const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
@@ -34,6 +45,10 @@ const EmployeeList = () => {
 
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [employeeToDelete, setEmployeeToDelete] = useState(null);
+
+  // Excel preview state
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewData, setPreviewData] = useState([]);
 
   const loadEmployees = () => {
     setEmployees(getEmployees());
@@ -45,26 +60,25 @@ const EmployeeList = () => {
 
   // ===================== EXPORT TO EXCEL =====================
   const exportToExcel = () => {
-  const dataToExport = employees.map(({ photo, ...rest }) => rest);
+    const dataToExport = employees.map(({ photo, ...rest }) => rest);
 
-  const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
 
-  const excelBuffer = XLSX.write(workbook, {
-    bookType: "xlsx",
-    type: "array",
-  });
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
 
-  const file = new Blob([excelBuffer], {
-    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  });
+    const file = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
 
-  saveAs(file, "employees.xlsx");
-};
+    saveAs(file, "employees.xlsx");
+  };
 
-
-  // ===================== IMPORT FROM EXCEL =====================
+  // ===================== IMPORT WITH VALIDATION + PREVIEW =====================
   const importFromExcel = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -78,30 +92,90 @@ const EmployeeList = () => {
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const imported = XLSX.utils.sheet_to_json(sheet);
 
-      // Clean imported data
-      const cleaned = imported.map((emp, index) => ({
-        id:
-          emp.id ||
-          `EMP${(index + 1).toString().padStart(3, "0")}`,
-        fullname: emp.fullname || "",
-        email: emp.email || "",
-        phone: emp.phone || "",
-        dob: emp.dob || "",
-        joinDate: emp.joinDate || "",
-        department: emp.department || "",
-        jobTitle: emp.jobTitle || "",
-        salary: emp.salary || "",
-        manager: emp.manager || "",
-        photo: emp.photo || null,
-      }));
+      const existingEmployees = getEmployees();
+      const existingUsers = getUsers();
 
-      saveEmployees(cleaned);
-      loadEmployees();
-      alert("Employees imported successfully!");
+      const validated = imported.map((emp, index) => {
+        const row = {
+          id: emp.id || `EMP${(index + 1).toString().padStart(3, "0")}`,
+          fullname: emp.fullname || "",
+          email: emp.email || "",
+          phone: emp.phone || "",
+          dob: emp.dob || "",
+          joinDate: emp.joinDate || "",
+          department: emp.department || "",
+          jobTitle: emp.jobTitle || "",
+          salary: emp.salary || "",
+          manager: emp.manager || "",
+          photo: emp.photo || null,
+          error: "",
+        };
+
+        // ---------- VALIDATION ----------
+        if (!row.fullname) row.error = "Missing fullname";
+        else if (!row.email) row.error = "Missing email";
+        else if (!/\S+@\S+\.\S+/.test(row.email)) row.error = "Invalid email";
+        else if (existingEmployees.some((e) => e.email === row.email))
+          row.error = "Duplicate email (existing employee)";
+        else if (existingUsers.some((u) => u.email === row.email))
+          row.error = "Duplicate email (user login exists)";
+        else if (!VALID_DEPARTMENTS.includes(row.department))
+          row.error = "Invalid department";
+        else if (!row.jobTitle) row.error = "Missing job title";
+        else if (new Date(row.joinDate) <= new Date(row.dob))
+          row.error = "Join Date must be after DOB";
+
+        return row;
+      });
+
+      setPreviewData(validated);
+      setPreviewOpen(true);
     };
 
     reader.readAsArrayBuffer(file);
   };
+
+  // ===================== CONFIRM IMPORT =====================
+const confirmImport = () => {
+  const validRows = previewData.filter((row) => row.error === "");
+
+  // Get current employees
+  const existing = getEmployees();
+
+  // Merge without duplicates
+  const merged = [
+    ...existing,
+    ...validRows.filter(
+      (imp) => !existing.some((ex) => ex.email === imp.email)
+    )
+  ];
+
+  // Save to localStorage
+  saveEmployees(merged);
+
+  // Auto-create login accounts
+  const users = getUsers();
+  validRows.forEach((emp) => {
+    if (!users.some((u) => u.email === emp.email)) {
+      users.push({
+        fullname: emp.fullname,
+        email: emp.email,
+        password: Math.random().toString(36).slice(-8),
+        role: "employee",
+      });
+    }
+  });
+
+  saveUsers(users);
+
+  // Close preview dialog
+  setPreviewOpen(false);
+
+  // Reload employee list UI
+  loadEmployees();
+
+  message("Employees imported successfully!");
+};
 
   // ===================== RENDER =====================
   return (
@@ -196,11 +270,61 @@ const EmployeeList = () => {
         </Table>
       </Paper>
 
-      <AddEmployeeDialog
-        open={openAdd}
-        onClose={() => setOpenAdd(false)}
-        onSuccess={loadEmployees}
-      />
+      {/* ===================== IMPORT PREVIEW MODAL ===================== */}
+      <Dialog open={previewOpen} fullWidth maxWidth="lg">
+        <DialogTitle>Preview Imported Employees</DialogTitle>
+        <DialogContent>
+          {previewData.some((row) => row.error) && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              Some rows contain errors. Fix your Excel and re-upload.
+            </Alert>
+          )}
+
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Full Name</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Department</TableCell>
+                <TableCell>Job Title</TableCell>
+                <TableCell>Status</TableCell>
+              </TableRow>
+            </TableHead>
+
+            <TableBody>
+              {previewData.map((row, idx) => (
+                <TableRow key={idx} sx={{ bgcolor: row.error ? "#ffebee" : "#e8f5e9" }}>
+                  <TableCell>{row.fullname}</TableCell>
+                  <TableCell>{row.email}</TableCell>
+                  <TableCell>{row.department}</TableCell>
+                  <TableCell>{row.jobTitle}</TableCell>
+                  <TableCell>
+                    {row.error ? (
+                      <Typography color="error">{row.error}</Typography>
+                    ) : (
+                      <Typography color="green">OK</Typography>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setPreviewOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            disabled={previewData.some((row) => row.error)}
+            onClick={confirmImport}
+          >
+            Confirm Import
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add/Edit/View/Delete */}
+      <AddEmployeeDialog open={openAdd} onClose={() => setOpenAdd(false)} onSuccess={loadEmployees} />
 
       {selectedEmployee && (
         <EditEmployeeDialog

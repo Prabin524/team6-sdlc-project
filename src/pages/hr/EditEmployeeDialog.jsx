@@ -27,8 +27,7 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
   const [manager, setManager] = useState("");
   const [photo, setPhoto] = useState(null);
 
-  // ⭐ New: password reset
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState(""); // optional reset
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -45,7 +44,8 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
       setSalary(employee.salary ?? "");
       setManager(employee.manager || "");
       setPhoto(employee.photo || null);
-      setPassword(""); // blank by default (only reset if HR enters)
+
+      setPassword("");
       setError("");
       setSuccess("");
     }
@@ -95,14 +95,14 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
       photo,
     };
 
-    // ===================== UPDATE EMPLOYEE DB =====================
+    // ==================== UPDATE EMPLOYEE TABLE ====================
     const result = updateEmployee(employee.id, updatedData);
     if (!result.success) {
       setError(result.message || "Failed to update employee.");
       return;
     }
 
-    // ===================== UPDATE USER LOGIN DB =====================
+    // ==================== UPDATE LOGIN TABLE ======================
     const users = getUsers();
     const loginUser = users.find((u) => u.email === employee.email);
 
@@ -112,7 +112,6 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
         email: email.trim().toLowerCase(),
       };
 
-      // HR entered a new password → update it
       if (password.trim() !== "") {
         loginUpdates.password = password.trim();
       }
@@ -120,14 +119,20 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
       const loginResult = updateUser(employee.email, loginUpdates);
 
       if (!loginResult.success) {
-        setError("Employee updated but login update failed: " + loginResult.message);
+        setError(
+          "Employee updated but login update failed: " + loginResult.message
+        );
         return;
       }
     }
 
+    //  SUCCESS MESSAGE and auto closed after 2 seconds
     setSuccess("Employee & Login updated successfully!");
-    onSuccess?.();
-    onClose?.();
+
+    setTimeout(() => {
+      onSuccess?.();
+      onClose?.();
+    }, 2000);
   };
 
   const handlePhotoUpload = (e) => {
@@ -153,11 +158,17 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
           <Avatar src={photo} sx={{ width: 80, height: 80, margin: "auto" }} />
           <Button variant="outlined" component="label" sx={{ mt: 1 }}>
             Change Photo
-            <input type="file" hidden accept="image/*" onChange={handlePhotoUpload} />
+            <input hidden type="file" accept="image/*" onChange={handlePhotoUpload} />
           </Button>
         </Box>
 
-        <TextField fullWidth label="Employee ID" margin="dense" disabled value={employee.id} />
+        <TextField
+          fullWidth
+          label="Employee ID"
+          value={employee.id}
+          margin="dense"
+          disabled
+        />
 
         <TextField
           fullWidth
@@ -176,15 +187,15 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           error={email !== "" && !isValidEmail(email)}
-          helperText={email !== "" && !isValidEmail(email) ? "Invalid email" : ""}
+          helperText={!isValidEmail(email) && email !== "" ? "Invalid email" : ""}
         />
 
-        {/* ⭐ NEW PASSWORD RESET FIELD */}
+        {/* PASSWORD RESET */}
         <TextField
           fullWidth
+          type="password"
           label="Reset Password (optional)"
           margin="dense"
-          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           helperText="Leave empty to keep current password"
@@ -201,8 +212,8 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
 
         <TextField
           fullWidth
-          required
           type="date"
+          required
           label="Date of Birth"
           margin="dense"
           InputLabelProps={{ shrink: true }}
@@ -212,8 +223,8 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
 
         <TextField
           fullWidth
-          required
           type="date"
+          required
           label="Join Date"
           margin="dense"
           InputLabelProps={{ shrink: true }}
