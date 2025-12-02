@@ -95,14 +95,14 @@ const EditEmployeeDialog = ({ open, onClose, employee, onSuccess }) => {
       photo,
     };
 
-    // ==================== UPDATE EMPLOYEE TABLE ====================
+    //  UPDATE EMPLOYEE TABLE 
     const result = updateEmployee(employee.id, updatedData);
     if (!result.success) {
       setError(result.message || "Failed to update employee.");
       return;
     }
 
-    // ==================== UPDATE LOGIN TABLE ======================
+    //  UPDATE LOGIN TABLE 
     const users = getUsers();
     const loginUser = users.find((u) => u.email === employee.email);
 
