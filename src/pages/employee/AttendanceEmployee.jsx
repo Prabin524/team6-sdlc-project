@@ -8,6 +8,7 @@ import {
   initAttendanceDB,
   getAttendanceByEmail
 } from "../../services/attendanceService";
+
 import { useAuth } from "../../context/AuthContext";
 
 const AttendanceEmployee = () => {
@@ -17,13 +18,19 @@ const AttendanceEmployee = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  useEffect(() => {
-    initAttendanceDB();
+  // Reload attendance
+  const reloadRecords = () => {
     if (user?.email) {
       setRecords(getAttendanceByEmail(user.email));
     }
+  };
+
+  useEffect(() => {
+    initAttendanceDB();
+    reloadRecords();
   }, [user]);
 
+  // Filter by date range
   const filteredRecords = useMemo(() => {
     return records.filter((r) => {
       if (startDate && r.date < startDate) return false;
@@ -55,29 +62,44 @@ const AttendanceEmployee = () => {
         />
       </Box>
 
+      {/* ATTENDANCE TABLE */}
       <Paper>
         <Table>
           <TableHead>
             <TableRow>
               <TableCell>Date</TableCell>
+              <TableCell>Clock In</TableCell>
+              <TableCell>Clock Out</TableCell>
+              <TableCell>Total Hours</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Note</TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
-            {filteredRecords.map((r, i) => (
-              <TableRow key={`${r.date}-${i}`}>
-                <TableCell>{r.date}</TableCell>
-                <TableCell>{r.status}</TableCell>
-                <TableCell>{r.note || "-"}</TableCell>
+            {filteredRecords.map((row, index) => (
+              <TableRow key={index}>
+                <TableCell>{row.date}</TableCell>
+                <TableCell>{row.clockIn || "-"}</TableCell>
+                <TableCell>{row.clockOut || "-"}</TableCell>
+
+                <TableCell>
+                  {row.totalHours !== undefined &&
+                   row.totalMinutes !== undefined &&
+                   row.totalSeconds !== undefined ? (
+                    `${row.totalHours}h ${row.totalMinutes}m ${row.totalSeconds}s`
+                  ) : (
+                    "-"
+                  )}
+                </TableCell>
+
+                <TableCell>{row.status}</TableCell>
               </TableRow>
             ))}
 
             {filteredRecords.length === 0 && (
               <TableRow>
-                <TableCell colSpan={3} align="center">
-                  No attendance records yet.
+                <TableCell colSpan={5} align="center">
+                  No records found
                 </TableCell>
               </TableRow>
             )}

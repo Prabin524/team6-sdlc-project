@@ -7,53 +7,74 @@ import {
 import { getEmployees } from "../../services/employeeService";
 import { markAttendance } from "../../services/attendanceService";
 
-const MarkAttendanceDialog = ({ open, onClose, onSuccess }) => {
+const MarkAttendanceDialog = ({ open, onClose, onSuccess, record }) => {
   const [employees, setEmployees] = useState([]);
 
   const [email, setEmail] = useState("");
   const [date, setDate] = useState("");
   const [status, setStatus] = useState("Present");
   const [note, setNote] = useState("");
+  const [clockIn, setClockIn] = useState("");
+  const [clockOut, setClockOut] = useState("");
 
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (open) {
       setEmployees(getEmployees());
-      setEmail("");
-      setDate("");
-      setStatus("Present");
-      setNote("");
+
+      if (record) {
+        // EDIT mode
+        setEmail(record.email);
+        setDate(record.date);
+        setStatus(record.status || "Present");
+        setNote(record.note || "");
+        setClockIn(record.clockIn || "");
+        setClockOut(record.clockOut || "");
+      } else {
+        // ADD mode
+        setEmail("");
+        setDate("");
+        setStatus("Present");
+        setNote("");
+        setClockIn("");
+        setClockOut("");
+      }
+
       setError("");
     }
-  }, [open]);
+  }, [open, record]);
 
   const handleSave = () => {
-    if (!email || !date || !status) {
-      setError("Employee, Date and Status are required.");
+    if (!email || !date) {
+      setError("Employee and Date are required.");
       return;
     }
 
     const emp = employees.find((e) => e.email === email);
 
-    const record = {
+    const updatedRecord = {
       email,
       fullname: emp?.fullname || "",
       department: emp?.department || "",
-      date,                 // yyyy-mm-dd
-      status,               // Present / Absent / Leave
+      date,
+      status,
       note,
-      markedAt: new Date().toISOString()
+      clockIn: clockIn || null,
+      clockOut: clockOut || null,
+      markedAt: new Date().toISOString(),
     };
 
-    markAttendance(record);
+    markAttendance(updatedRecord);
     onSuccess();
     onClose();
   };
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth>
-      <DialogTitle>Mark Attendance</DialogTitle>
+      <DialogTitle>
+        {record ? "Edit Attendance" : "Mark Attendance"}
+      </DialogTitle>
 
       <DialogContent>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -64,6 +85,7 @@ const MarkAttendanceDialog = ({ open, onClose, onSuccess }) => {
           label="Employee"
           margin="dense"
           value={email}
+          disabled={!!record}  // Cannot change employee in edit
           onChange={(e) => setEmail(e.target.value)}
         >
           {employees.map((emp) => (
@@ -80,6 +102,7 @@ const MarkAttendanceDialog = ({ open, onClose, onSuccess }) => {
           margin="dense"
           InputLabelProps={{ shrink: true }}
           value={date}
+          disabled={!!record} // cannot change date in edit
           onChange={(e) => setDate(e.target.value)}
         />
 
@@ -95,6 +118,22 @@ const MarkAttendanceDialog = ({ open, onClose, onSuccess }) => {
           <MenuItem value="Absent">Absent</MenuItem>
           <MenuItem value="Leave">Leave</MenuItem>
         </TextField>
+
+        <TextField
+          fullWidth
+          label="Clock In (HH:MM:SS or leave blank)"
+          margin="dense"
+          value={clockIn}
+          onChange={(e) => setClockIn(e.target.value)}
+        />
+
+        <TextField
+          fullWidth
+          label="Clock Out (HH:MM:SS or leave blank)"
+          margin="dense"
+          value={clockOut}
+          onChange={(e) => setClockOut(e.target.value)}
+        />
 
         <TextField
           fullWidth

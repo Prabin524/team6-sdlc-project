@@ -19,7 +19,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import LogoutIcon from "@mui/icons-material/Logout";
-
+import DashboardIcon from '@mui/icons-material/Dashboard';
 import { useNavigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -44,6 +44,7 @@ const EmployeeLayout = ({ children }) => {
   }
 
   const menuItems = [
+    { text: "Dashboard", icon: <DashboardIcon />, path: "/employee/dashboard" },
     { text: "My Profile", icon: <PersonIcon />, path: "/employee/profile" },
     { text: "Attendance", icon: <AccessTimeIcon />, path: "/employee/attendance" },
     { text: "My Payslips", icon: <ReceiptLongIcon />, path: "/employee/payslips" },

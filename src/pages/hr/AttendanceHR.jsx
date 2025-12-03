@@ -25,6 +25,8 @@ const AttendanceHR = () => {
 
   const [openDelete, setOpenDelete] = useState(false);
   const [toDelete, setToDelete] = useState(null);
+  const [toEdit, setToEdit] = useState(null);
+
 
   const loadRecords = () => {
     initAttendanceDB();
@@ -97,61 +99,100 @@ const AttendanceHR = () => {
       </Box>
 
       <Paper>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Employee</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Department</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Note</TableCell>
-              <TableCell align="right">Action</TableCell>
-            </TableRow>
-          </TableHead>
+  <Table>
+    <TableHead>
+      <TableRow>
+        <TableCell>Employee</TableCell>
+        <TableCell>Email</TableCell>
+        <TableCell>Department</TableCell>
+        <TableCell>Date</TableCell>
 
-          <TableBody>
-            {filteredRecords.map((r, i) => (
-              <TableRow key={`${r.email}-${r.date}-${i}`}>
-                <TableCell>{r.fullname}</TableCell>
-                <TableCell>{r.email}</TableCell>
-                <TableCell>{r.department}</TableCell>
-                <TableCell>{r.date}</TableCell>
-                <TableCell>{r.status}</TableCell>
-                <TableCell>{r.note || "-"}</TableCell>
+        {/* NEW COLUMNS */}
+        <TableCell>Clock In</TableCell>
+        <TableCell>Clock Out</TableCell>
+        <TableCell>Total Hours</TableCell>
 
-                <TableCell align="right">
-                  <Button
-                    size="small"
-                    color="error"
-                    variant="outlined"
-                    onClick={() => {
-                      setToDelete(r);
-                      setOpenDelete(true);
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+        <TableCell>Status</TableCell>
+        <TableCell>Note</TableCell>
+        <TableCell align="right">Action</TableCell>
+      </TableRow>
+    </TableHead>
 
-            {filteredRecords.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={7} align="center">
-                  No attendance records found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </Paper>
+    <TableBody>
+      {filteredRecords.map((r, i) => (
+        <TableRow key={`${r.email}-${r.date}-${i}`}>
+          <TableCell>{r.fullname || "-"}</TableCell>
+          <TableCell>{r.email}</TableCell>
+          <TableCell>{r.department || "-"}</TableCell>
+          <TableCell>{r.date}</TableCell>
 
-      <MarkAttendanceDialog
-        open={openMark}
-        onClose={() => setOpenMark(false)}
-        onSuccess={loadRecords}
-      />
+          {/* NEW FIELDS */}
+          <TableCell>{r.clockIn || "-"}</TableCell>
+          <TableCell>{r.clockOut || "-"}</TableCell>
+          <TableCell>
+            {r.totalHours !== undefined &&
+            r.totalMinutes !== undefined &&
+            r.totalSeconds !== undefined
+              ? `${r.totalHours}h ${r.totalMinutes}m ${r.totalSeconds}s`
+              : "-"}
+          </TableCell>
+
+          <TableCell>{r.status}</TableCell>
+          <TableCell>{r.note || "-"}</TableCell>
+
+          <TableCell align="right" sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
+  
+  {/* EDIT BUTTON */}
+  <Button
+    size="small"
+    variant="outlined"
+    color="primary"
+    onClick={() => {
+      setToEdit(r);
+      setOpenMark(true);
+    }}
+  >
+    Edit
+  </Button>
+
+  {/* DELETE BUTTON */}
+  <Button
+    size="small"
+    color="error"
+    variant="outlined"
+    onClick={() => {
+      setToDelete(r);
+      setOpenDelete(true);
+    }}
+  >
+    Delete
+  </Button>
+</TableCell>
+
+        </TableRow>
+      ))}
+
+      {filteredRecords.length === 0 && (
+        <TableRow>
+          <TableCell colSpan={10} align="center">
+            No attendance records found.
+          </TableCell>
+        </TableRow>
+      )}
+    </TableBody>
+  </Table>
+</Paper>
+
+     <MarkAttendanceDialog
+  open={openMark}
+  record={toEdit}         
+  onClose={() => {
+    setOpenMark(false);
+    setToEdit(null);
+  }}
+  onSuccess={loadRecords}
+/>
+
 
       <DeleteConfirmDialog
         open={openDelete}

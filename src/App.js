@@ -28,6 +28,7 @@ import RequireHR from "./components/RequireHR";
 import RequireEmployee from "./components/RequireEmployee";
 import PayrollHR from "./pages/hr/PayrollHR";
 import MyPayslips from "./pages/employee/MyPayslips";
+import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
 
 const ForgotPassword = () => <h1>Forgot Password Page</h1>;
 
@@ -130,6 +131,15 @@ function App() {
   }
 />
 {/*  EMPLOYEE ROUTES s */}
+<Route
+  path="/employee/dashboard"
+  element={
+    <EmployeeLayout>
+      <EmployeeDashboard />
+    </EmployeeLayout>
+  }
+/>
+
 <Route
   path="/employee"
   element={
