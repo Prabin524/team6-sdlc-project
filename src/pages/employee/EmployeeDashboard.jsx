@@ -39,7 +39,7 @@ const EmployeeDashboard = () => {
     loadToday();
   }, [user]);
 
-  /*Handle clock in */
+//Clock in function
   const handleClockIn = () => {
     const res = clockIn(user.email);
 

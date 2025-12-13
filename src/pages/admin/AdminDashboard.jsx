@@ -25,7 +25,6 @@ const AdminDashboard = () => {
   const [filterStart, setFilterStart] = useState("");
   const [filterEnd, setFilterEnd] = useState("");
 
-  // Load stats but EXCLUDE EMPLOYEES
   const loadStats = () => {
     const result = getSystemStats();
 
@@ -155,7 +154,6 @@ const AdminDashboard = () => {
         </Grid>
       </Grid>
 
-      {/* FILTER SECTION */}
       <Paper sx={{ p: 3, mt: 4 }}>
         <Typography variant="h6" gutterBottom>
           Filter Login Records

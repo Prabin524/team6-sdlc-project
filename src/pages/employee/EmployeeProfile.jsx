@@ -6,7 +6,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 const EmployeeProfile = () => {
-  const { user } = useAuth(); // Logged-in user
+  const { user } = useAuth(); 
   const [employee, setEmployee] = useState(null);
 
   useEffect(() => {

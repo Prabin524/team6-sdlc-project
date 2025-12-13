@@ -128,9 +128,7 @@ const AddEmployeeDialog = ({ open, onClose, onSuccess }) => {
       return;
     }
 
-    // ------------------------------
-    // 3️⃣ CREATE EMPLOYEE LOGIN
-    // ------------------------------
+//EMPLOYEE LOGIN CREATED
     const tempPassword = generatePassword();
 
     const newUser = {
