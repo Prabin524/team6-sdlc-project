@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Paper,
@@ -47,11 +47,7 @@ const HRDashboard = () => {
   const [recentAttendance, setRecentAttendance] = useState([]);
   const [weeklyTrend, setWeeklyTrend] = useState([]);
 
-  useEffect(() => {
-    loadDashboard();
-  }, []);
-
-  const loadDashboard = () => {
+  const loadDashboard = useCallback(() => {
     const empList = getEmployees() || [];
     setEmployees(empList);
 
@@ -103,7 +99,11 @@ const HRDashboard = () => {
     // ---- Recent attendance (last 5 records) ----
     const latest = allAttendance.slice(-5).reverse();
     setRecentAttendance(latest);
-  };
+  }, []);
+
+  useEffect(() => {
+    loadDashboard();
+  }, [loadDashboard]);
 
   // Build last 7 days trend
   const buildWeeklyTrend = (allAttendance) => {
