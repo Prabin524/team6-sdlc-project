@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Box, Grid, Paper, Typography } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -28,16 +28,16 @@ const EmployeeDashboard = () => {
     severity: "success",
   });
 
-  const loadToday = () => {
+  const loadToday = useCallback(() => {
     if (user) {
       const record = getTodayAttendance(user.email);
       setTodayRecord(record);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     loadToday();
-  }, [user]);
+  }, [user, loadToday]);
 
 //Clock in function
   const handleClockIn = () => {

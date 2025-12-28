@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Box, Paper, Table, TableBody, TableCell,
   TableHead, TableRow, Typography, TextField
@@ -19,16 +19,16 @@ const AttendanceEmployee = () => {
   const [endDate, setEndDate] = useState("");
 
   // Reload attendance
-  const reloadRecords = () => {
+  const reloadRecords = useCallback(() => {
     if (user?.email) {
       setRecords(getAttendanceByEmail(user.email));
     }
-  };
+  }, [user?.email]);
 
   useEffect(() => {
     initAttendanceDB();
     reloadRecords();
-  }, [user]);
+  }, [user, reloadRecords]);
 
   // Filter by date range
   const filteredRecords = useMemo(() => {

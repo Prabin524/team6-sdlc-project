@@ -35,7 +35,7 @@ const HRLayout = ({ children }) => {
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("app-user"));
     if (stored) setUser(stored);
-  }, []);
+  }, [setUser]);
 
   const handleDrawerToggle = () => setOpen((prev) => !prev);
 
